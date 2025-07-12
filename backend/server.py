@@ -4,6 +4,8 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import certifi
 
+MONGO_URL = os.getenv("MONGO_URL")
+
 client = AsyncIOMotorClient(
     MONGO_URL,
     tlsCAFile=certifi.where()
