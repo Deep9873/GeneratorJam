@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import List, Optional
 from datetime import datetime
 
-from backend.models import (
+from models import (
     GenerationRequest,
     TextGenerationResponse,
     ImageGenerationResponse,
