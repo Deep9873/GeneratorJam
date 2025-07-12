@@ -10,37 +10,40 @@
     <meta name="theme-color" content="#000000" />
 
     <!-- Primary Meta Tags -->
-    <title>Generator Jam – AI‑Powered Content & Image Generator</title>
+  <title>Generator Jam – AI-Powered Blog, LinkedIn Articles, Tweets & Instagram Captions</title>
     <meta
-    name="description"
-    content="Generator Jam uses AI to craft blog posts, LinkedIn articles, Twitter tweets, and Instagram captions in seconds."
-  />
-  <meta
-    name="keywords"
-    content="AI content generator, blog posts, LinkedIn articles, Twitter tweets, Instagram captions, image generator"
-  />
-    <meta name="author" content="Generator Jam Team" />
+      name="description"
+      content="Generate AI-powered blog posts, LinkedIn articles, tweets, Instagram captions, or images in seconds with Generator Jam."
+    />
+    <meta
+      name="keywords"
+      content="AI content generator, blog posts, LinkedIn articles, Twitter tweets, Instagram captions, image generator"
+    />
 
-    <!-- Open Graph / Facebook -->
+    <!-- 4. Canonical URL -->
+    <link rel="canonical" href="https://generatorjam-1.onrender.com/" />
+
+    <!-- 5. Open Graph (Facebook, LinkedIn, etc.) -->
     <meta property="og:type"        content="website" />
-    <meta property="og:title"       content="Generator Jam – AI‑Powered Content & Image Generator" />
-    <meta property="og:description" content="Generate blog posts, social media copy, or AI‑generated images instantly with Generator Jam." />
+    <meta property="og:title"       content="Generator Jam – AI-Powered Content Generator" />
+    <meta property="og:description" content="Create AI-driven blog posts, LinkedIn articles, tweets, Instagram captions, or images instantly." />
     <meta property="og:url"         content="https://generatorjam-1.onrender.com/" />
     <meta property="og:image"       content="%PUBLIC_URL%/og-image.png" />
 
-    <!-- Twitter -->
+    <!-- 6. Twitter Card -->
     <meta name="twitter:card"        content="summary_large_image" />
-    <meta name="twitter:title"       content="Generator Jam – AI‑Powered Content & Image Generator" />
-    <meta name="twitter:description" content="Generate blog posts, social media copy, or AI‑generated images instantly with Generator Jam." />
+    <meta name="twitter:title"       content="Generator Jam – AI-Powered Content Generator" />
+    <meta name="twitter:description" content="Create AI-driven blog posts, LinkedIn articles, tweets, Instagram captions, or images instantly." />
     <meta name="twitter:image"       content="%PUBLIC_URL%/twitter-card.png" />
 
-    <!-- Schema.org JSON‑LD structured data -->
+    <!-- 7. Structured Data (JSON-LD) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Generator Jam",
       "url": "https://generatorjam-1.onrender.com/",
+      "description": "AI-powered content & image generation for blogs, LinkedIn, Twitter, and Instagram.",
       "potentialAction": {
         "@type": "SearchAction",
         "target": "https://generatorjam-1.onrender.com/?q={search_term_string}",
@@ -49,12 +52,17 @@
     }
     </script>
 
-    <!-- Link to sitemap and robots.txt -->
-    <link rel="sitemap" type="application/xml" title="Sitemap" href="%PUBLIC_URL%/sitemap.xml" />
-    <meta name="robots" content="index,follow" />
+    <!-- 8. Performance Hints -->
+    <link rel="preconnect" href="https://api-inference.huggingface.co" />
+    <link rel="dns-prefetch" href="https://api-inference.huggingface.co" />
 
-    <!-- manifest.json (PWA metadata) -->
+    <!-- 9. PWA Manifest -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- 10. Favicon & Apple Touch Icons -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+
 
     <title>Generator Jam</title>
   </head>
