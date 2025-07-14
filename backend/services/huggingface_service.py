@@ -23,8 +23,10 @@ class HuggingFaceService:
         }
         
         # Try multiple free models in order of preference
-        self.models = [
-    "black-forest-labs/FLUX.1-dev"
+     self.models = [
+    "black-forest-labs/FLUX.1-dev",
+    "black-forest-labs/FLUX.1-schnell",
+    "stabilityai/stable-diffusion-3.5-large"
 ]
 
     
