@@ -1,5 +1,10 @@
 import axios from 'axios';
 
+// Ensure user_id exists in localStorage before any API call
+if (!localStorage.getItem("user_id")) {
+  localStorage.setItem("user_id", crypto.randomUUID());
+}
+
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
@@ -7,15 +12,17 @@ class ApiService {
   constructor() {
     this.client = axios.create({
       baseURL: API,
-      timeout: 120000, // 2 minute timeout for AI generation
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      timeout: 120000,
     });
 
-    // Add request interceptor for logging
+    // ✅ Request interceptor to add user_id and content-type
     this.client.interceptors.request.use(
       (config) => {
+        const userId = localStorage.getItem("user_id");
+        if (userId) {
+          config.headers["user_id"] = userId;
+        }
+        config.headers["Content-Type"] = "application/json";
         console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
         return config;
       },
@@ -25,11 +32,9 @@ class ApiService {
       }
     );
 
-    // Add response interceptor for error handling
+    // ✅ Response interceptor for error handling
     this.client.interceptors.response.use(
-      (response) => {
-        return response;
-      },
+      (response) => response,
       (error) => {
         console.error('API Response Error:', error);
         if (error.response?.status === 429) {
