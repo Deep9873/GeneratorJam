@@ -64,6 +64,7 @@ async def generate_text_content(request: GenerationRequest):
         result = await gemini_service.generate_text_content(request.prompt, request.content_type)
 
         history_item = HistoryItem(
+             user_id=user_id,
             type="text",
             content_type=request.content_type,
             prompt=request.prompt,
@@ -89,6 +90,7 @@ async def generate_image_content(request: GenerationRequest):
         result = await huggingface_service.generate_image(request.prompt)
 
         history_item = HistoryItem(
+             user_id=user_id,
             type="image",
             content_type=request.content_type,
             prompt=request.prompt,
@@ -111,10 +113,11 @@ async def generate_image_content(request: GenerationRequest):
 
 
 @api_router.get("/history", response_model=HistoryResponse)
-async def get_history(limit: Optional[int] = 50, offset: Optional[int] = 0):
+async def get_history(request: Request, limit: Optional[int] = 50, offset: Optional[int] = 0):
     try:
-        total = await db.history.count_documents({})
-        cursor = db.history.find({}).sort("timestamp", -1).skip(offset).limit(limit)
+        user_id = get_user_id(request)
+        total = await db.history.count_documents({"user_id": user_id})
+        cursor = db.history.find({"user_id": user_id}).sort("timestamp", -1).skip(offset).limit(limit)
         history_docs = await cursor.to_list(length=limit)
 
         history_items = []
@@ -128,55 +131,52 @@ async def get_history(limit: Optional[int] = 50, offset: Optional[int] = 0):
         logging.error(f"Failed to get history: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve history")
 
-
 @api_router.put("/history/{item_id}/favorite")
-async def toggle_favorite(item_id: str):
+async def toggle_favorite(item_id: str, request: Request):
     try:
-        result = await db.history.find_one({"id": item_id})
+        user_id = get_user_id(request)
+
+        result = await db.history.find_one({"id": item_id, "user_id": user_id})
         if not result:
             raise HTTPException(status_code=404, detail="History item not found")
 
         new_favorite_status = not result.get("is_favorite", False)
         await db.history.update_one(
-            {"id": item_id},
+            {"id": item_id, "user_id": user_id},
             {"$set": {"is_favorite": new_favorite_status}}
         )
 
         return {"success": True, "is_favorite": new_favorite_status}
 
-    except HTTPException:
-        raise
     except Exception as e:
         logging.error(f"Failed to toggle favorite: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to toggle favorite")
 
-
 @api_router.delete("/history/{item_id}")
-async def delete_history_item(item_id: str):
+async def delete_history_item(item_id: str, request: Request):
     try:
-        result = await db.history.delete_one({"id": item_id})
+        user_id = get_user_id(request)
+
+        result = await db.history.delete_one({"id": item_id, "user_id": user_id})
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="History item not found")
 
         return {"success": True, "message": "History item deleted"}
 
-    except HTTPException:
-        raise
     except Exception as e:
         logging.error(f"Failed to delete history item: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to delete history item")
 
-
 @api_router.delete("/history")
-async def clear_history():
+async def clear_history(request: Request):
     try:
-        result = await db.history.delete_many({})
+        user_id = get_user_id(request)
+        result = await db.history.delete_many({"user_id": user_id})
         return {"success": True, "deleted_count": result.deleted_count}
 
     except Exception as e:
         logging.error(f"Failed to clear history: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to clear history")
-
 
 @api_router.get("/health")
 async def health_check():
