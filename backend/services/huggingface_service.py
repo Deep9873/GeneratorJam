@@ -23,12 +23,11 @@ class HuggingFaceService:
         }
         
         # Try multiple free models in order of preference
-     self.models = [
-    "black-forest-labs/FLUX.1-dev",
-    "black-forest-labs/FLUX.1-schnell",
-    "stabilityai/stable-diffusion-3.5-large"
-]
-
+        self.models = [
+            "black-forest-labs/FLUX.1-dev",
+            "black-forest-labs/FLUX.1-schnell",
+            "stabilityai/stable-diffusion-3.5-large"
+        ]
     
     async def generate_image(self, prompt: str, retry_count: int = 3) -> ImageGenerationResponse:
         """Generate image using Hugging Face API"""
