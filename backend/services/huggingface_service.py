@@ -26,6 +26,7 @@ class HuggingFaceService:
         self.models = [
             "black-forest-labs/FLUX.1-dev",
             "black-forest-labs/FLUX.1-schnell",
+            stabilityai/stable-diffusion-xl-base-1.0
             "stabilityai/stable-diffusion-3.5-large"
         ]
     
