@@ -7,7 +7,12 @@ from typing import Optional
 from models import ImageGenerationResponse
 from PIL import Image
 import logging
+from huggingface_hub import InferenceClient
 
+client = InferenceClient(
+    provider="nebius",
+    api_key=os.getenv["HF_TOKEN"],
+)
 
 logger = logging.getLogger(__name__)
 
