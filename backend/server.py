@@ -4,15 +4,6 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import certifi
 import os
-
-MONGO_URL = os.getenv("MONGO_URL")
-
-client = AsyncIOMotorClient(
-    MONGO_URL,
-    tlsCAFile=certifi.where()
-)
-
-import os
 import logging
 from pathlib import Path
 from typing import List, Optional
@@ -34,7 +25,10 @@ load_dotenv(ROOT_DIR / '.env')
 
 # === MongoDB Connection ===
 mongo_url = os.environ.get('MONGO_URL')
-client = AsyncIOMotorClient(mongo_url)
+client = AsyncIOMotorClient(
+    mongo_url,
+    tlsCAFile=certifi.where()
+)
 db = client[os.environ.get('DB_NAME')]
 
 # === Initialize services ===
@@ -45,7 +39,14 @@ huggingface_service = HuggingFaceService()
 app = FastAPI(title="Generator Jam API", version="1.0.0")
 api_router = APIRouter(prefix="/api")
 
-# === API Routes ===
+# === Helper function to get user_id from header ===
+def get_user_id(request: Request) -> str:
+    user_id = request.headers.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Missing user_id header")
+    return user_id
+
+# === Routes ===
 
 @api_router.get("/")
 async def root():
@@ -53,8 +54,10 @@ async def root():
 
 
 @api_router.post("/generate/text", response_model=TextGenerationResponse)
-async def generate_text_content(request: GenerationRequest):
+async def generate_text_content(request: GenerationRequest, http_request: Request):
     try:
+        user_id = get_user_id(http_request)
+
         if request.content_type not in ['blog', 'twitter', 'instagram', 'linkedin']:
             raise HTTPException(
                 status_code=400,
@@ -64,33 +67,32 @@ async def generate_text_content(request: GenerationRequest):
         result = await gemini_service.generate_text_content(request.prompt, request.content_type)
 
         history_item = HistoryItem(
-             user_id=user_id,
+            user_id=user_id,
             type="text",
             content_type=request.content_type,
             prompt=request.prompt,
             result=result.dict()
         )
         await db.history.insert_one(history_item.dict())
-
         return result
 
-    except HTTPException:
-        raise
     except Exception as e:
         logging.error(f"Text generation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Text generation failed: {str(e)}")
 
 
 @api_router.post("/generate/image", response_model=ImageGenerationResponse)
-async def generate_image_content(request: GenerationRequest):
+async def generate_image_content(request: GenerationRequest, http_request: Request):
     try:
+        user_id = get_user_id(http_request)
+
         if request.content_type != 'image':
             raise HTTPException(status_code=400, detail="Content type must be 'image' for image generation")
 
         result = await huggingface_service.generate_image(request.prompt)
 
         history_item = HistoryItem(
-             user_id=user_id,
+            user_id=user_id,
             type="image",
             content_type=request.content_type,
             prompt=request.prompt,
@@ -100,16 +102,9 @@ async def generate_image_content(request: GenerationRequest):
 
         return result
 
-    except HTTPException:
-        raise
     except Exception as e:
         logging.error(f"Image generation failed: {str(e)}")
-        if "rate limit" in str(e).lower():
-            raise HTTPException(status_code=429, detail="Rate limit exceeded. Please try again in a few minutes.")
-        elif "loading" in str(e).lower():
-            raise HTTPException(status_code=503, detail="AI model is loading. Please wait and try again.")
-        else:
-            raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
 
 
 @api_router.get("/history", response_model=HistoryResponse)
@@ -131,11 +126,11 @@ async def get_history(request: Request, limit: Optional[int] = 50, offset: Optio
         logging.error(f"Failed to get history: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve history")
 
+
 @api_router.put("/history/{item_id}/favorite")
 async def toggle_favorite(item_id: str, request: Request):
     try:
         user_id = get_user_id(request)
-
         result = await db.history.find_one({"id": item_id, "user_id": user_id})
         if not result:
             raise HTTPException(status_code=404, detail="History item not found")
@@ -152,11 +147,11 @@ async def toggle_favorite(item_id: str, request: Request):
         logging.error(f"Failed to toggle favorite: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to toggle favorite")
 
+
 @api_router.delete("/history/{item_id}")
 async def delete_history_item(item_id: str, request: Request):
     try:
         user_id = get_user_id(request)
-
         result = await db.history.delete_one({"id": item_id, "user_id": user_id})
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="History item not found")
@@ -166,6 +161,7 @@ async def delete_history_item(item_id: str, request: Request):
     except Exception as e:
         logging.error(f"Failed to delete history item: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to delete history item")
+
 
 @api_router.delete("/history")
 async def clear_history(request: Request):
@@ -177,6 +173,7 @@ async def clear_history(request: Request):
     except Exception as e:
         logging.error(f"Failed to clear history: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to clear history")
+
 
 @api_router.get("/health")
 async def health_check():
