@@ -7,12 +7,6 @@ from typing import Optional
 from models import ImageGenerationResponse
 from PIL import Image
 import logging
-from huggingface_hub import InferenceClient
-
-client = InferenceClient(
-    provider="nebius",
-    api_key=os.getenv["HF_TOKEN"],
-)
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +25,7 @@ class HuggingFaceService:
         self.models = [
             "black-forest-labs/FLUX.1-dev",
             "black-forest-labs/FLUX.1-schnell",
-            stabilityai/stable-diffusion-xl-base-1.0,
+            "stabilityai/stable-diffusion-xl-base-1.0",
             "stabilityai/stable-diffusion-3.5-large"
         ]
     
