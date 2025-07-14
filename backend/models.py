@@ -23,12 +23,14 @@ class ImageGenerationResponse(BaseModel):
 
 class HistoryItem(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str  # ✅ Add this line
     type: str  # text or image
     content_type: str
     prompt: str
     result: dict
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     is_favorite: bool = False
+        
 
 class HistoryResponse(BaseModel):
     items: List[HistoryItem]
